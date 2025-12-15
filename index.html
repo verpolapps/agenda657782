@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agenda Surat Digital</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- APP -->
+<div class="d-flex vh-100">
+
+  <!-- Sidebar -->
+  <nav id="sidebar" class="sidebar bg-dark text-white d-flex flex-column">
+    <div class="sidebar-top text-center py-3 border-bottom">
+      <img src="asset/logo.png" class="rounded-circle mb-2" alt="logo" width="70">
+      <div class="h6">Agenda Surat</div>
+      <small class="text-secondary">Digital</small>
+    </div>
+
+    <ul class="nav flex-column mt-3 px-2 gap-1">
+      <li class="nav-item"><a class="nav-link text-white active" data-tab="dashboard"><i class="fa fa-chart-simple me-2"></i> Dashboard</a></li>
+      <li class="nav-item"><a class="nav-link text-white" data-tab="ketua-masuk"><i class="fa fa-inbox me-2"></i> Ketua - Surat Masuk</a></li>
+      <li class="nav-item"><a class="nav-link text-white" data-tab="ketua-keluar"><i class="fa fa-paper-plane me-2"></i> Ketua - Surat Keluar</a></li>
+      <li class="nav-item"><a class="nav-link text-white" data-tab="sekretaris-masuk"><i class="fa fa-inbox me-2"></i> Sekretaris - Surat Masuk</a></li>
+      <li class="nav-item"><a class="nav-link text-white" data-tab="sekretaris-keluar"><i class="fa fa-paper-plane me-2"></i> Sekretaris - Surat Keluar</a></li>
+      <li class="nav-item"><a class="nav-link text-white" data-tab="nota-dinas"><i class="fa fa-file-alt me-2"></i> Nota Dinas</a></li>
+      <li class="nav-item mt-auto"><hr class="text-secondary" /><a class="nav-link text-danger" id="btn-logout"><i class="fa fa-sign-out-alt me-2"></i> Logout</a></li>
+    </ul>
+  </nav>
+
+  <!-- Main content -->
+  <div class="main flex-grow-1 d-flex flex-column">
+
+    <!-- Topbar -->
+    <header class="topbar bg-white shadow-sm d-flex align-items-center justify-content-between px-3">
+      <div class="d-flex align-items-center">
+        <button class="btn btn-outline-primary me-3 d-md-none" id="btn-toggle"><i class="fa fa-bars"></i></button>
+        <h5 class="mb-0" id="judul">Selamat Datang</h5>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-purple d-none" id="btn-manage-user">Kelola User</button>
+        <button class="btn btn-sm btn-warning" onclick="location.href='ganti_password.html'">Ganti Password</button>
+        <div class="text-muted small">User: <strong id="user-name">-</strong> | Role: <strong id="user-role">-</strong></div>
+      </div>
+    </header>
+
+    <!-- Content area -->
+    <div id="content" class="content p-3 overflow-auto">
+
+      <!-- Dashboard -->
+      <section id="dashboard" class="tab-pane active">
+        <div class="container-fluid">
+<!-- Search & Filter Controls -->
+<div class="container-fluid my-2" id="search-filter-controls">
+  <div class="row g-2 align-items-center">
+    <div class="col-sm-12 col-md-6">
+      <input id="globalSearch" class="form-control" placeholder="Cari nomor, perihal, pengirim...">
+    </div>
+    <div class="col-sm-6 col-md-3">
+      <select id="yearFilter" class="form-select">
+        <option value="">Semua Tahun</option>
+      </select>
+    </div>
+    <div class="col-sm-6 col-md-3 text-end">
+      <button id="clearFilters" class="btn btn-sm btn-outline-secondary">Hapus Filter</button>
+    </div>
+  </div>
+</div>
+
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <div class="card h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="card-title">Statistik Surat Masuk & Keluar</h6>
+                    <select id="filter-year" class="form-select w-auto"></select>
+                  </div>
+                  <canvas id="chartSurat" style="max-height:360px;margin-top:10px;"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-xl-6">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6 class="card-title">Distribusi Nota Dinas</h6>
+                  <canvas id="chartNodin" style="max-height:360px;"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="card">
+                <div class="card-body">
+                  <h6>Ringkasan Data</h6>
+                  <div class="row" id="summary-cards"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <div class="card">
+                <div class="card-body">
+                  <h6>Tabel Ringkasan (Masuk & Keluar)</h6>
+                  <div class="table-responsive"><table class="table table-sm" id="table-summary"></table></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Ketua Masuk -->
+      <section id="ketua-masuk" class="tab-pane d-none">
+        <div class="container-fluid">
+          <h5>Surat Masuk - Ketua</h5>
+          <form id="form-ketua-masuk" class="row g-3 mb-3">
+            <div class="col-md-2"><label class="form-label">Nomor Agenda</label><input class="form-control no-agenda numeric-only" id="no-agenda-ketua-masuk" readonly /></div>
+            <div class="col-md-2"><label class="form-label">Tanggal Agenda</label><input type="date" class="form-control" id="tgl-ketua-masuk" /></div>
+            <div class="col-md-3"><label class="form-label">Pengirim</label><input class="form-control" id="pengirim-ketua" /></div>
+            <div class="col-md-2"><label class="form-label">Nomor Surat</label><input class="form-control" id="no-surat-ketua" /></div>
+            <div class="col-md-3"><label class="form-label">Tanggal Surat</label><input type="date" class="form-control" id="tgl-surat-ketua" /></div>
+            <div class="col-12"><label class="form-label">Perihal</label><input class="form-control" id="perihal-ketua-masuk" /></div>
+            <div class="col-12 d-flex gap-2">
+              <input type="file" id="file-ketua-masuk" class="form-control w-auto" />
+              <button class="btn btn-success" id="save-ketua-masuk">Simpan</button>
+            </div>
+          </form>
+
+          <div class="card">
+            <div class="card-body">
+              <h6>Data Surat Masuk</h6>
+              <div class="table-responsive"><table class="table table-sm" id="table-ketua-masuk"></table></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ketua Keluar -->
+      <section id="ketua-keluar" class="tab-pane d-none">
+        <div class="container-fluid">
+          <h5>Surat Keluar - Ketua</h5>
+          <form id="form-ketua-keluar" class="row g-3 mb-3">
+            <div class="col-md-2"><label class="form-label">Nomor Agenda</label><input class="form-control no-agenda keluar-nodin" id="no-agenda-ketua-keluar" readonly /></div>
+            <div class="col-md-2"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="tgl-ketua-keluar" /></div>
+            <div class="col-md-4"><label class="form-label">Penerima</label><input class="form-control" id="penerima-ketua" /></div>
+            <div class="col-md-4"><label class="form-label">Perihal</label><input class="form-control" id="perihal-ketua-keluar" /></div>
+            <div class="col-12 d-flex gap-2">
+              <input type="file" id="file-ketua-keluar" class="form-control w-auto" />
+              <button class="btn btn-success" id="save-ketua-keluar">Simpan</button>
+            </div>
+          </form>
+
+          <div class="card">
+            <div class="card-body">
+              <h6>Data Surat Keluar</h6>
+              <div class="table-responsive"><table class="table table-sm" id="table-ketua-keluar"></table></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sekretaris Masuk -->
+      <section id="sekretaris-masuk" class="tab-pane d-none">
+        <div class="container-fluid">
+          <h5>Surat Masuk - Sekretaris</h5>
+          <form id="form-sekretaris-masuk" class="row g-3 mb-3">
+            <div class="col-md-2"><label class="form-label">Nomor Agenda</label><input class="form-control no-agenda numeric-only" id="no-agenda-sekretaris-masuk" readonly /></div>
+            <div class="col-md-2"><label class="form-label">Tanggal Agenda</label><input type="date" class="form-control" id="tgl-sekretaris-masuk" /></div>
+            <div class="col-md-3"><label class="form-label">Pengirim</label><input class="form-control" id="pengirim-sekretaris" /></div>
+            <div class="col-md-2"><label class="form-label">Nomor Surat</label><input class="form-control" id="no-surat-sekretaris" /></div>
+            <div class="col-md-3"><label class="form-label">Tanggal Surat</label><input type="date" class="form-control" id="tgl-surat-sekretaris" /></div>
+            <div class="col-12"><label class="form-label">Perihal</label><input class="form-control" id="perihal-sekretaris-masuk" /></div>
+            <div class="col-12 d-flex gap-2">
+              <input type="file" id="file-sekretaris-masuk" class="form-control w-auto" />
+              <button class="btn btn-success" id="save-sekretaris-masuk">Simpan</button>
+            </div>
+          </form>
+
+          <div class="card">
+            <div class="card-body">
+              <h6>Data Surat Masuk</h6>
+              <div class="table-responsive"><table class="table table-sm" id="table-sekretaris-masuk"></table></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sekretaris Keluar -->
+      <section id="sekretaris-keluar" class="tab-pane d-none">
+        <div class="container-fluid">
+          <h5>Surat Keluar - Sekretaris</h5>
+          <form id="form-sekretaris-keluar" class="row g-3 mb-3">
+            <div class="col-md-2"><label class="form-label">Nomor Agenda</label><input class="form-control no-agenda keluar-nodin" id="no-agenda-sekretaris-keluar" readonly /></div>
+            <div class="col-md-2"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="tgl-sekretaris-keluar" /></div>
+            <div class="col-md-4"><label class="form-label">Penerima</label><input class="form-control" id="penerima-sekretaris" /></div>
+            <div class="col-md-4"><label class="form-label">Perihal</label><input class="form-control" id="perihal-sekretaris-keluar" /></div>
+            <div class="col-12 d-flex gap-2">
+              <input type="file" id="file-sekretaris-keluar" class="form-control w-auto" />
+              <button class="btn btn-success" id="save-sekretaris-keluar">Simpan</button>
+            </div>
+          </form>
+
+          <div class="card">
+            <div class="card-body">
+              <h6>Data Surat Keluar</h6>
+              <div class="table-responsive"><table class="table table-sm" id="table-sekretaris-keluar"></table></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Nota Dinas -->
+      <section id="nota-dinas" class="tab-pane d-none">
+        <div class="container-fluid">
+          <h5>Nota Dinas</h5>
+          <form id="form-nodin" class="row g-3 mb-3">
+            <div class="col-md-2"><label class="form-label">Nomor Nodin</label><input class="form-control no-agenda keluar-nodin" id="no-nodin" readonly /></div>
+            <div class="col-md-2"><label class="form-label">Tanggal</label><input type="date" class="form-control" id="tgl-nodin" /></div>
+            <div class="col-md-3"><label class="form-label">Divisi</label>
+              <select id="divisi-nodin" class="form-select">
+                <option value="">Pilih</option><option>Sekretaris</option><option>KUL</option><option>Rendatin</option><option>Tekhum</option><option>SDM Parmas</option>
+              </select>
+            </div>
+            <div class="col-md-5"><label class="form-label">Perihal</label><input class="form-control" id="perihal-nodin" /></div>
+            <div class="col-12 d-flex gap-2">
+              <input type="file" id="file-nodin" class="form-control w-auto" />
+              <button class="btn btn-success" id="save-nodin">Simpan</button>
+            </div>
+          </form>
+
+          <div class="card">
+            <div class="card-body">
+              <h6>Data Nota Dinas</h6>
+              <div class="table-responsive"><table class="table table-sm" id="table-nodin"></table></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<!-- Edit Modal (reused for all types) -->
+<div class="modal fade" id="modalEdit" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form id="form-edit">
+        <div class="modal-header"><h5 class="modal-title">Edit Data</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body" id="modal-edit-body"></div>
+        <div class="modal-footer"><button class="btn btn-primary">Simpan Perubahan</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password -->
+<div class="modal fade" id="modalChangePass" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="form-change-pass">
+        <div class="modal-header"><h5 class="modal-title">Ganti Password</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div class="mb-2"><label class="form-label">Password Lama</label><input type="password" id="old-pass" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">Password Baru</label><input type="password" id="new-pass" class="form-control" required></div>
+          <div class="mb-2"><label class="form-label">Konfirmasi</label><input type="password" id="confirm-pass" class="form-control" required></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-primary">Update</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="script/agenda.js"></script>\n<script src="script/script.js"></script>
+
+<!-- File Preview Modal -->
+<div class="modal fade" id="filePreviewModal" tabindex="-1" aria-labelledby="filePreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="filePreviewModalLabel">Preview Lampiran</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="filePreviewBody" style="min-height:400px;">
+        <!-- content injected dynamically -->
+        <div id="filePreviewContent" class="w-100 text-center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agenda Surat Digital — Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="vh-100 d-flex align-items-center justify-content-center bg-gradient">
+  <div class="card shadow login-card">
+    <div class="card-body p-4">
+      <div class="text-center mb-3">
+        <img src="asset/logo.png" class="rounded-circle border p-1" alt="logo" width="90">
+      </div>
+      <h4 class="text-center mb-3">Agenda Surat Digital</h4>
+      <div class="mb-3">
+        <input id="login-username" class="form-control" placeholder="Username" />
+      </div>
+      <div class="mb-3">
+        <input id="login-password" type="password" class="form-control" placeholder="Password" />
+      </div>
+      <div class="d-grid gap-2">
+        <button id="btn-login" class="btn btn-primary">Masuk</button>
+      </div>
+      <p class="text-muted small mt-3 mb-0 text-center"></p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+// AUTO REDIRECT IF ALREADY LOGGED IN
+if (localStorage.getItem("app_current")) { 
+  window.location.href = 'index.html'; 
+}
+
+// HANYA import config — Firebase SUDAH di initialize di firebase-config.js
+import "./script/firebase-config.js";
+
+// Import Realtime Database
+import { 
+  getDatabase, 
+  ref, 
+  get 
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+// Ambil DB instance
+import { db } from "./script/firebase-config.js";
+
+// Hash SHA-256 untuk password
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// LOGIN HANDLER
+document.getElementById('btn-login').addEventListener('click', async ()=> {
+
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  if(!username || !password) {
+    alert('Isi username & password');
+    return;
+  }
+
+  // Ambil user dari database
+  const userRef = ref(db, 'users/' + username);
+  const snap = await get(userRef);
+
+  if(!snap.exists()) {
+    alert('Username tidak ditemukan');
+    return;
+  }
+
+  const user = snap.val();
+  const hashed = await sha256(password);
+
+  if(hashed === user.password) {
+
+    // Simpan session sederhana
+    localStorage.setItem('app_current', username);
+    localStorage.setItem('app_login_time', Date.now());
+
+    // Sinkron local user info
+    let localUsers = JSON.parse(localStorage.getItem('app_users') || "{}");
+    localUsers[username] = {
+      pass: user.password,
+      role: user.role || 'user',
+      nama: user.name || username
+    };
+    localStorage.setItem('app_users', JSON.stringify(localUsers));
+
+    // Redirect
+    window.location.href = 'index.html';
+
+  } else {
+    alert('Password salah');
+  }
+
+});
+</script>
+</body>
+</html>
