@@ -94,10 +94,18 @@
 <div class="toast-fixed" id="toast-container"></div>
 
 <script type="module">
-  import { firebaseConfig } from './script/firebase-config.js';
-  // Firebase modular SDK imports (Realtime Database)
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js';
-  import { getDatabase, ref, set, onValue, update, remove, push, child, get } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js';
+  // HANYA import config — Firebase SUDAH di initialize di firebase-config.js
+import "./script/firebase-config.js";
+
+// Import Realtime Database
+import { 
+  getDatabase, 
+  ref, 
+  get 
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+
+// Ambil DB instance
+import { db } from "./script/firebase-config.js";
 
   // init
   const app = initializeApp(firebaseConfig);
